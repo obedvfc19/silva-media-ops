@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Silva Media — Operations Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #080c10;
+    --surface:   #0d1117;
+    --border:    #1e2a38;
+    --text:      #c9d1d9;
+    --muted:     #6e7e8e;
+    --green:     #2ea043;
+    --green-dim: #0d2818;
+    --yellow:    #d29922;
+    --yellow-dim:#2a1f08;
+    --red:       #da3633;
+    --red-dim:   #2a0d0d;
+    --blue:      #388bfd;
+    --blue-dim:  #0d1f3a;
+    --mono:      'Space Mono', monospace;
+    --sans:      'DM Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    padding: 32px 24px;
+  }
+
+  /* ── HEADER ── */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 40px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .brand-icon {
+    width: 36px; height: 36px;
+    background: var(--blue);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+
+  .brand h1 {
+    font-family: var(--mono);
+    font-size: 14px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+
+  .brand p {
+    font-size: 11px;
+    color: var(--muted);
+    font-family: var(--mono);
+    letter-spacing: 0.06em;
+  }
+
+  #clock {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+  }
+
+  /* ── GRID ── */
+  .grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .card:hover { border-color: #2d3f52; }
+
+  .card-label {
+    font-size: 10px;
+    font-family: var(--mono);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  .card-value {
+    font-family: var(--mono);
+    font-size: 42px;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+
+  .card-sub {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .card.green  { border-color: var(--green);  background: var(--green-dim); }
+  .card.yellow { border-color: var(--yellow); background: var(--yellow-dim);}
+  .card.red    { border-color: var(--red);    background: var(--red-dim);   }
+
+  .card.green  .card-value { color: var(--green);  }
+  .card.yellow .card-value { color: var(--yellow); }
+  .card.red    .card-value { color: var(--red);    }
+
+  /* ── MIA STATUS CARD ── */
+  .mia-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .mia-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .mia-title {
+    font-size: 10px;
+    font-family: var(--mono);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .status-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 12px;
+    border-radius: 100px;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+  }
+
+  .status-pill.online  { background: var(--green-dim);  color: var(--green);  border: 1px solid var(--green); }
+  .status-pill.offline { background: var(--red-dim);    color: var(--red);    border: 1px solid var(--red);   }
+
+  .pulse {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+
+  .pulse.green { background: var(--green); }
+  .pulse.red   { background: var(--red);   box-shadow: 0 0 0 0 var(--red); }
+
+  @keyframes pulse {
+    0%   { transform: scale(1);   opacity: 1; }
+    50%  { transform: scale(1.4); opacity: 0.6; }
+    100% { transform: scale(1);   opacity: 1; }
+  }
+
+  .mia-meta {
+    display: flex;
+    gap: 24px;
+  }
+
+  .mia-stat { display: flex; flex-direction: column; gap: 4px; }
+  .mia-stat span:first-child { font-size: 10px; color: var(--muted); font-family: var(--mono); letter-spacing: 0.1em; text-transform: uppercase; }
+  .mia-stat span:last-child  { font-size: 20px; font-family: var(--mono); font-weight: 700; color: var(--text); }
+
+  .btn-run {
+    background: transparent;
+    border: 1px solid var(--blue);
+    color: var(--blue);
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    transition: all 0.2s;
+    align-self: flex-start;
+  }
+
+  .btn-run:hover { background: var(--blue-dim); }
+  .btn-run:active { transform: scale(0.97); }
+  .btn-run.scanning { color: var(--yellow); border-color: var(--yellow); cursor: default; }
+
+  /* ── ALERTS TABLE ── */
+  .alerts-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+  }
+
+  .alerts-title {
+    font-size: 10px;
+    font-family: var(--mono);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+
+  table { width: 100%; border-collapse: collapse; }
+
+  th {
+    text-align: left;
+    font-size: 10px;
+    font-family: var(--mono);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 0 12px 10px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  td {
+    padding: 12px;
+    font-size: 13px;
+    border-bottom: 1px solid #12191f;
+    vertical-align: middle;
+  }
+
+  tr:last-child td { border-bottom: none; }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 100px;
+    font-size: 10px;
+    font-family: var(--mono);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+  }
+
+  .badge.critico  { background: var(--red-dim);    color: var(--red);    border: 1px solid var(--red); }
+  .badge.inactivo { background: var(--yellow-dim); color: var(--yellow); border: 1px solid var(--yellow); }
+  .badge.ok       { background: var(--green-dim);  color: var(--green);  border: 1px solid var(--green); }
+  .badge.offline  { background: var(--red-dim);    color: var(--red);    border: 1px solid var(--red); }
+
+  .ts { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+
+  /* ── SCAN OVERLAY ── */
+  #scan-msg {
+    display: none;
+    position: fixed;
+    bottom: 24px; right: 24px;
+    background: var(--surface);
+    border: 1px solid var(--blue);
+    color: var(--blue);
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="brand-icon">🏠</div>
+    <div>
+      <h1>Silva Media</h1>
+      <p>Operations Dashboard</p>
+    </div>
+  </div>
+  <div id="clock">—</div>
+</header>
+
+<!-- Lead Status Cards -->
+<div class="grid-3">
+  <div class="card green">
+    <div class="card-label">Leads Activos</div>
+    <div class="card-value" id="cnt-activos">2</div>
+    <div class="card-sub">Menos de 48h sin contacto</div>
+  </div>
+  <div class="card yellow">
+    <div class="card-label">Leads Inactivos</div>
+    <div class="card-value" id="cnt-inactivos">2</div>
+    <div class="card-sub">Entre 48h y 72h sin contacto</div>
+  </div>
+  <div class="card red">
+    <div class="card-label">Leads Críticos</div>
+    <div class="card-value" id="cnt-criticos">2</div>
+    <div class="card-sub">Más de 72h sin contacto</div>
+  </div>
+</div>
+
+<!-- Assistable + Recent Alerts -->
+<div class="grid-2">
+
+  <!-- Mia Status -->
+  <div class="mia-card">
+    <div class="mia-header">
+      <span class="mia-title">Assistable "Mia" — Status</span>
+      <div class="status-pill" id="mia-pill">
+        <div class="pulse" id="mia-pulse"></div>
+        <span id="mia-status-text">—</span>
+      </div>
+    </div>
+
+    <div class="mia-meta">
+      <div class="mia-stat">
+        <span>Última respuesta</span>
+        <span id="mia-last">—</span>
+      </div>
+      <div class="mia-stat">
+        <span>Leads atendidos hoy</span>
+        <span>3</span>
+      </div>
+      <div class="mia-stat">
+        <span>Tiempo offline</span>
+        <span id="mia-offline">—</span>
+      </div>
+    </div>
+
+    <button class="btn-run" id="btn-run" onclick="runMonitor()">
+      ▶ Run Monitor Now
+    </button>
+  </div>
+
+  <!-- Recent Alerts -->
+  <div class="alerts-card">
+    <div class="alerts-title">Recent Alerts</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Timestamp</th>
+          <th>Tipo</th>
+          <th>Descripción</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="alerts-body">
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<div id="scan-msg">⟳ Scanning GoHighLevel + Assistable...</div>
+
+<script>
+  // ── DATA (equivalente a silva_media_data.py) ──
+  const NOW = new Date();
+  const h = (hrs) => new Date(NOW - hrs * 3600 * 1000);
+
+  const LEADS = [
+    { nombre: "Juan García",      horas: 130, estado: "CRÍTICO"  },
+    { nombre: "María López",      horas: 75,  estado: "CRÍTICO"  },
+    { nombre: "Carlos Rodríguez", horas: 52,  estado: "INACTIVO" },
+    { nombre: "Ana Martínez",     horas: 30,  estado: "INACTIVO" },
+    { nombre: "Roberto Sánchez",  horas: 8,   estado: "ACTIVO"   },
+    { nombre: "Laura Herrera",    horas: 3,   estado: "ACTIVO"   },
+  ];
+
+  const MIA_LAST = new Date(NOW - 41 * 60 * 1000); // 41 min sin responder
+
+  const ALERTS_DATA = [
+    { ts: new Date(NOW - 2  * 60000), tipo: "offline",  desc: "Mia sin respuesta · 41 min",        status: "critico"  },
+    { ts: new Date(NOW - 15 * 60000), tipo: "inactivo", desc: "Juan García · 130h sin contacto",   status: "critico"  },
+    { ts: new Date(NOW - 30 * 60000), tipo: "inactivo", desc: "María López · 75h sin contacto",    status: "critico"  },
+    { ts: new Date(NOW - 55 * 60000), tipo: "inactivo", desc: "Carlos Rodríguez · 52h",            status: "inactivo" },
+    { ts: new Date(NOW - 4  * 3600000), tipo: "ok",     desc: "Monitor completado · sin alertas",  status: "ok"       },
+  ];
+
+  // ── CLOCK ──
+  function updateClock() {
+    const d = new Date();
+    document.getElementById("clock").textContent =
+      d.toLocaleString("es-MX", { hour12: false });
+  }
+  setInterval(updateClock, 1000);
+  updateClock();
+
+  // ── MIA STATUS ──
+  function renderMia() {
+    const mins = Math.round((NOW - MIA_LAST) / 60000);
+    const online = mins < 30;
+    const pill   = document.getElementById("mia-pill");
+    const pulse  = document.getElementById("mia-pulse");
+
+    pill.className = "status-pill " + (online ? "online" : "offline");
+    pulse.className = "pulse " + (online ? "green" : "red");
+    document.getElementById("mia-status-text").textContent = online ? "ONLINE" : "OFFLINE";
+    document.getElementById("mia-last").textContent = mins + " min";
+    document.getElementById("mia-offline").textContent = online ? "—" : mins + " min";
+  }
+
+  // ── ALERTS TABLE ──
+  function renderAlerts() {
+    const body = document.getElementById("alerts-body");
+    body.innerHTML = ALERTS_DATA.map(a => {
+      const ts = a.ts.toLocaleTimeString("es-MX", { hour12: false });
+      const badge = `<span class="badge ${a.status}">${a.tipo.toUpperCase()}</span>`;
+      return `<tr>
+        <td class="ts">${ts}</td>
+        <td>${badge}</td>
+        <td>${a.desc}</td>
+        <td><span class="badge ${a.status === 'ok' ? 'ok' : a.status}">${a.status === 'critico' ? '🔴 Urgente' : a.status === 'inactivo' ? '🟡 Revisar' : '✅ OK'}</span></td>
+      </tr>`;
+    }).join("");
+  }
+
+  // ── RUN MONITOR ──
+  function runMonitor() {
+    const btn = document.getElementById("btn-run");
+    const msg = document.getElementById("scan-msg");
+    btn.textContent = "⟳ Scanning...";
+    btn.classList.add("scanning");
+    btn.disabled = true;
+    msg.style.display = "block";
+
+    setTimeout(() => {
+      // Simula resultado del scan
+      document.getElementById("cnt-activos").textContent  = "2";
+      document.getElementById("cnt-inactivos").textContent = "2";
+      document.getElementById("cnt-criticos").textContent  = "2";
+      renderMia();
+      renderAlerts();
+      msg.style.display = "none";
+      btn.textContent = "▶ Run Monitor Now";
+      btn.classList.remove("scanning");
+      btn.disabled = false;
+    }, 2500);
+  }
+
+  // ── INIT ──
+  renderMia();
+  renderAlerts();
+</script>
+</body>
+</html>
